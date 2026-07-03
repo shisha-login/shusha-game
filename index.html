@@ -888,4 +888,58 @@ updateStats();
 </script>
 
 </body>
+<script>
+// ==========================================
+// СБРОС ГОЛОСОВАНИЯ ПО КОМБИНАЦИИ Shift + G
+// ==========================================
+
+document.addEventListener('keydown', function(event) {
+    // Проверяем: зажат ли Shift и нажата клавиша G (или g)
+    if (event.shiftKey && (event.key === 'G' || event.key === 'g')) {
+        event.preventDefault(); // Чтобы не печаталась буква G
+        
+        // Двойное подтверждение
+        if (!confirm('⚠️ ТОЧНО СБРОСИТЬ ВСЕ ГОЛОСА?\n\nЭто действие нельзя отменить!')) {
+            return;
+        }
+        if (!confirm('🔴 ЕЩЁ РАЗ: удалить все голоса за Dust 2 и Mirage?')) {
+            return;
+        }
+        
+        resetVotesAdmin();
+    }
+});
+
+async function resetVotesAdmin() {
+    try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': API_KEY
+            },
+            body: JSON.stringify({ dust2: 0, mirage: 0 })
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка сервера: ' + response.status);
+        }
+
+        // Очищаем localStorage у всех пользователей
+        localStorage.removeItem('shusha_voted');
+        
+        alert('✅ ВСЕ ГОЛОСА УСПЕШНО СБРОШЕНЫ!\n\nDust 2: 0\nMirage: 0');
+        
+        // Перезагружаем страницу
+        location.reload();
+        
+    } catch (error) {
+        alert('❌ Ошибка сброса:\n' + error.message + '\n\nПопробуй ещё раз или сбрось вручную через JSONBin.');
+        console.error('Ошибка сброса:', error);
+    }
+}
+
+// Подсказка в консоли (для админа)
+console.log('🔑 Для сброса голосов нажми Shift + G');
+</script>
 </html>
