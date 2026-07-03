@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shusha Game's | CS2</title>
+    <style>
+        /* --- ОБЩИЕ СТИЛИ --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- ФОН С БЕГУЩИМИ СТРОКАМИ --- */
+        .marquee-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            opacity: 0.06;
+        }
+
+        .marquee-line {
+            display: flex;
+            white-space: nowrap;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 120px;
+            letter-spacing: 15px;
+            color: #00f0ff;
+            text-transform: uppercase;
+            position: absolute;
+            animation: marqueeScroll 25s linear infinite;
+            text-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
+        }
+
+        .marquee-line:nth-child(1) { top: 5%; animation-duration: 22s; color: #ff6b9d; opacity: 0.5; }
+        .marquee-line:nth-child(2) { top: 25%; animation-duration: 28s; animation-direction: reverse; color: #7b61ff; opacity: 0.4; font-size: 100px; }
+        .marquee-line:nth-child(3) { top: 45%; animation-duration: 20s; color: #00f0ff; opacity: 0.6; }
+        .marquee-line:nth-child(4) { top: 65%; animation-duration: 30s; animation-direction: reverse; color: #ff6b9d; opacity: 0.3; font-size: 140px; }
+        .marquee-line:nth-child(5) { top: 85%; animation-duration: 24s; color: #7b61ff; opacity: 0.5; font-size: 110px; }
+        .marquee-line:nth-child(6) { top: 15%; animation-duration: 35s; color: #00f0ff; opacity: 0.2; font-size: 80px; }
+        .marquee-line:nth-child(7) { top: 55%; animation-duration: 18s; color: #ff6b9d; opacity: 0.25; font-size: 90px; }
+        .marquee-line:nth-child(8) { top: 75%; animation-duration: 26s; color: #7b61ff; opacity: 0.35; font-size: 130px; }
+
+        @keyframes marqueeScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 40%, rgba(0, 240, 255, 0.03), transparent 50%),
+                        radial-gradient(ellipse at 70% 60%, rgba(255, 107, 157, 0.02), transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, rgba(123, 97, 255, 0.02), transparent 60%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* --- ОБЕРТКА САЙТА --- */
+        .site-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 240, 255, 0.08);
+            border-radius: 28px;
+            padding: 35px 30px 25px;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), inset 0 0 100px rgba(0, 240, 255, 0.02);
+        }
+
+        .site-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00f0ff, #7b61ff, #ff6b9d, #00f0ff, transparent);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.2);
+        }
+
+        /* --- НАВИГАЦИЯ --- */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 5;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            padding: 10px 40px;
+            border: 2px solid rgba(0, 240, 255, 0.08);
+            border-radius: 50px;
+            background: rgba(0, 0, 0, 0.4);
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn:hover {
+            border-color: rgba(0, 240, 255, 0.2);
+            color: #aaa;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            border-color: #00f0ff;
+            color: #00f0ff;
+            background: rgba(0, 240, 255, 0.05);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.03);
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ======================================== */
+        /* === СТРАНИЦА 1: ГЛАВНАЯ === */
+        /* ======================================== */
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .main-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(3.8rem, 12vw, 7rem);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #00f0ff 0%, #7b61ff 40%, #ff6b9d 70%, #00f0ff 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease-in-out infinite;
+            line-height: 1;
+            filter: drop-shadow(0 4px 20px rgba(0, 240, 255, 0.15));
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .main-subtitle {
+            font-size: 1rem;
+            color: #888;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            margin-top: -4px;
+            font-weight: 300;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 35px;
+            align-items: stretch;
+            margin-top: 5px;
+        }
+
+        .rules-block {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 30px 28px;
+            border: 1px solid rgba(0, 240, 255, 0.04);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .rules-block:hover {
+            border-color: rgba(0, 240, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .rules-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00f0ff, #7b61ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            border-bottom: 2px solid rgba(0, 240, 255, 0.06);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rules-title span {
+            -webkit-text-fill-color: initial;
+            color: #fff;
+        }
+
+        .rules-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .rules-list li {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            padding-left: 28px;
+            position: relative;
+            color: #c0c0d0;
+        }
+
+        .rules-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #00f0ff;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .rules-list strong { color: #fff; font-weight: 700; }
+        .highlight-wh {
+            background: rgba(0, 240, 255, 0.08);
+            padding: 2px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            color: #00f0ff;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .highlight-bhop {
+            background: rgba(123, 97, 255, 0.08);
+            padding: 2px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(123, 97, 255, 0.1);
+            color: #7b61ff;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .highlight-win {
+            background: rgba(0, 240, 255, 0.04);
+            padding: 6px 14px;
+            border-radius: 8px;
+            border-left: 3px solid #00f0ff;
+            margin-top: 8px;
+            color: #90e0f0;
+            font-weight: 600;
+        }
+
+        .prize-block {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(6px);
+            border-radius: 20px;
+            padding: 25px 22px 30px;
+            text-align: center;
+            border: 1px solid rgba(0, 240, 255, 0.04);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .prize-block:hover { border-color: rgba(0, 240, 255, 0.08); }
+
+        .prize-label {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.6rem;
+            letter-spacing: 3px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .prize-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.6rem;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #00f0ff, #7b61ff, #ff6b9d);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+
+        .prize-image {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 14px;
+            filter: drop-shadow(0 10px 30px rgba(0, 240, 255, 0.05));
+            transition: all 0.4s ease;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border: 1px solid rgba(0, 240, 255, 0.04);
+            margin: 0 auto;
+            display: block;
+        }
+        .prize-image:hover { transform: scale(1.02); filter: drop-shadow(0 15px 40px rgba(0, 240, 255, 0.1)); }
+
+        .prize-rarity {
+            margin-top: 14px;
+            display: inline-block;
+            background: rgba(0, 240, 255, 0.04);
+            border: 1px solid rgba(0, 240, 255, 0.06);
+            padding: 5px 22px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            color: #00f0ff;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* ======================================== */
+        /* === СТРАНИЦА 2: ГОЛОСОВАНИЕ === */
+        /* ======================================== */
+
+        .vote-header { text-align: center; margin-bottom: 30px; }
+        .vote-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #00f0ff, #7b61ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+        }
+        .vote-subtitle { color: #777; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; }
+
+        .vote-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 10px;
+        }
+
+        .vote-card {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 20px 20px 28px;
+            text-align: center;
+            border: 2px solid rgba(0, 240, 255, 0.03);
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+        .vote-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.02) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .vote-card:hover::before { opacity: 1; }
+        .vote-card:hover {
+            border-color: rgba(0, 240, 255, 0.08);
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .vote-card.selected {
+            border-color: #00f0ff;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.04), inset 0 0 50px rgba(0, 240, 255, 0.02);
+            background: rgba(0, 240, 255, 0.03);
+        }
+        .vote-card.selected::after {
+            content: '✓ ВЫБРАНО';
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: #00f0ff;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+        }
+        .vote-card-image {
+            width: 100%;
+            max-width: 240px;
+            height: auto;
+            border-radius: 14px;
+            margin: 0 auto 12px;
+            display: block;
+            border: 1px solid rgba(0, 240, 255, 0.03);
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            object-fit: cover;
+        }
+        .vote-card:hover .vote-card-image { filter: brightness(1.05); }
+        .vote-card-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.2rem;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #00f0ff, #7b61ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+        }
+        .vote-card-map-info { font-size: 0.85rem; color: #666; letter-spacing: 2px; margin-top: 2px; }
+
+        .vote-stats {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 15px 0 5px;
+            flex-wrap: wrap;
+        }
+        .vote-stat-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(0, 240, 255, 0.05);
+            font-size: 0.9rem;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+        .vote-stat-item strong { color: #fff; font-size: 1.1rem; }
+        .vote-stat-item .dust2-color { color: #00f0ff; }
+        .vote-stat-item .mirage-color { color: #7b61ff; }
+
+        .vote-bars {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0 15px;
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.03);
+        }
+        .vote-bar-dust2 {
+            height: 100%;
+            background: linear-gradient(90deg, #00f0ff, #00a0cc);
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            width: 0%;
+            border-radius: 10px 0 0 10px;
+        }
+        .vote-bar-mirage {
+            height: 100%;
+            background: linear-gradient(90deg, #7b61ff, #5a3dcc);
+            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            width: 0%;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .vote-action { text-align: center; margin-top: 20px; }
+        .vote-btn {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+            padding: 14px 60px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #00f0ff, #7b61ff);
+            color: #0a0a0f;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 8px 30px rgba(0, 240, 255, 0.05);
+        }
+        .vote-btn:hover:not(:disabled) { transform: scale(1.04); box-shadow: 0 12px 50px rgba(0, 240, 255, 0.1); }
+        .vote-btn:disabled { opacity: 0.2; cursor: not-allowed; transform: none; box-shadow: none; }
+        .vote-btn.voted { background: linear-gradient(135deg, #00ff88, #00cc66); opacity: 0.8; }
+        .vote-result { margin-top: 16px; font-size: 1.1rem; color: #888; letter-spacing: 2px; }
+        .vote-result strong { color: #00f0ff; }
+        .vote-result .voted-text { color: #00ff88; }
+
+        /* ======================================== */
+        /* === СТРАНИЦА 3: УЧАСТНИКИ === */
+        /* ======================================== */
+
+        .participants-header { text-align: center; margin-bottom: 30px; }
+        .participants-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #ff6b9d, #ff8a5c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+        }
+        .participants-subtitle { color: #777; font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; }
+
+        .participants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 30px;
+            margin-top: 10px;
+        }
+
+        .participant-card {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 25px 20px 22px;
+            text-align: center;
+            border: 1px solid rgba(255, 107, 157, 0.06);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+        }
+        .participant-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(255, 107, 157, 0.2);
+            box-shadow: 0 20px 60px rgba(255, 107, 157, 0.05);
+        }
+
+        .participant-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            margin: 0 auto 14px;
+            display: block;
+            border: 2px solid rgba(255, 107, 157, 0.15);
+            transition: all 0.3s ease;
+            object-fit: cover;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .participant-card:hover .participant-avatar {
+            border-color: #ff6b9d;
+            box-shadow: 0 0 40px rgba(255, 107, 157, 0.1);
+        }
+
+        .participant-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+        .participant-status {
+            font-size: 0.75rem;
+            color: #666;
+            letter-spacing: 2px;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+        .participant-status.online { color: #00ff88; }
+        .participant-status.offline { color: #666; }
+
+        .participant-unknown {
+            opacity: 0.6;
+            border-style: dashed;
+            border-color: rgba(255,255,255,0.05);
+        }
+        .participant-unknown .participant-avatar {
+            border-color: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #444;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            letter-spacing: 2px;
+        }
+        .loading-spinner::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        /* ======================================== */
+        /* === АДАПТИВ === */
+        /* ======================================== */
+
+        @media (max-width: 820px) {
+            .content-grid { grid-template-columns: 1fr; gap: 25px; }
+            .vote-grid { grid-template-columns: 1fr; gap: 20px; }
+            .site-wrapper { padding: 20px 15px 18px; border-radius: 18px; }
+            .main-title { font-size: clamp(2.8rem, 10vw, 4.5rem); }
+            .prize-name { font-size: 2rem; }
+            .prize-image { max-width: 200px; }
+            .rules-block { padding: 22px 18px; }
+            .vote-title { font-size: 2.2rem; }
+            .vote-card-name { font-size: 1.8rem; }
+            .nav-btn { font-size: 1rem; padding: 8px 24px; }
+            .vote-btn { font-size: 1.4rem; padding: 12px 40px; }
+            .vote-card-image { max-width: 180px; }
+            .marquee-line { font-size: 60px !important; }
+            .vote-stats { gap: 15px; }
+            .vote-stat-item { font-size: 0.8rem; padding: 6px 14px; }
+            .participants-title { font-size: 2.2rem; }
+            .participants-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; }
+            .participant-avatar { width: 70px; height: 70px; }
+            .participant-name { font-size: 1.3rem; }
+        }
+
+        @media (max-width: 480px) {
+            .main-subtitle { font-size: 0.75rem; letter-spacing: 5px; }
+            .prize-image { max-width: 150px; }
+            .rules-list li { font-size: 0.95rem; }
+            .highlight-win { font-size: 0.9rem; }
+            .nav-btn { font-size: 0.85rem; padding: 6px 16px; }
+            .vote-card-image { max-width: 140px; }
+            .vote-title { font-size: 1.8rem; }
+            .marquee-line { font-size: 40px !important; letter-spacing: 8px; }
+            .vote-stats { flex-direction: column; align-items: center; gap: 8px; }
+            .participants-title { font-size: 1.8rem; }
+            .participants-grid { grid-template-columns: 1fr 1fr; gap: 15px; }
+            .participant-avatar { width: 60px; height: 60px; }
+            .participant-name { font-size: 1.1rem; }
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 30px;
+            color: #222;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            border-top: 1px solid rgba(0, 240, 255, 0.03);
+            padding-top: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========================================== -->
+<!-- БЕГУЩИЕ СТРОКИ НА ФОНЕ -->
+<!-- ========================================== -->
+<div class="marquee-bg">
+    <div class="marquee-line">✦ ShushA GamE ✦ ShushA GamE ✦ ShushA GamE ✦</div>
+    <div class="marquee-line">✦ ShushA GamE ✦ ShushA GamE ✦ ShushA GamE ✦</div>
+    <div class="marquee-line">✦ ShushA GamE ✦ ShushA GamE ✦ ShushA GamE ✦</div>
+    <div class="marquee-line">✦ ShushA GamE ✦ ShushA GamE ✦ ShushA GamE ✦</div>
+    <div class="marquee-line">✦ ShushA GamE ✦ ShushA GamE ✦ ShushA GamE ✦</div>
+    <div class="marquee-line">✦ ShushA GamE ✦ ShushA GamE ✦ ShushA GamE ✦</div>
+    <div class="marquee-line">✦ ShushA GamE ✦ ShushA GamE ✦ ShushA GamE ✦</div>
+    <div class="marquee-line">✦ ShushA GamE ✦ ShushA GamE ✦ ShushA GamE ✦</div>
+</div>
+
+<!-- ========================================== -->
+<!-- ОСНОВНАЯ ОБЕРТКА -->
+<!-- ========================================== -->
+<div class="site-wrapper">
+
+    <!-- НАВИГАЦИЯ -->
+    <div class="nav-tabs">
+        <button class="nav-btn active" data-page="page-main">🏠 Главная</button>
+        <button class="nav-btn" data-page="page-vote">🗳️ Голосование</button>
+        <button class="nav-btn" data-page="page-participants">👥 Участники</button>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- СТРАНИЦА 1: ГЛАВНАЯ -->
+    <!-- ============================================ -->
+    <div id="page-main" class="page active">
+        <header class="header">
+            <h1 class="main-title">Shusha Game's</h1>
+            <div class="main-subtitle">⚡ Counter-Strike 2 ⚡</div>
+        </header>
+        <div class="content-grid">
+            <section class="rules-block">
+                <h2 class="rules-title"><span>📜</span> Правила дуэли</h2>
+                <ul class="rules-list">
+                    <li><strong>roltox</strong> играет с <span class="highlight-wh">WallHack (WH)</span> и <span class="highlight-bhop">BunnyHop</span></li>
+                    <li>👥 Против него играют <strong>4 игрока</strong></li>
+                    <li>🏆 <strong>Условие победы:</strong> roltox должен выиграть матч</li>
+                    <li class="highlight-win">🎁 <strong>Если roltox побеждает</strong> — он получает главный приз:</li>
+                </ul>
+                <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(0, 240, 255, 0.04);">
+                    <span style="color: #444; font-size: 0.85rem; letter-spacing: 2px;">⚔️ Матч до победного • 1 vs 4</span>
+                </div>
+            </section>
+            <section class="prize-block">
+                <div class="prize-label">🏅 Главный приз</div>
+                <div class="prize-name">AWP | Скоростной зверь</div>
+                <img src="https://assets.lis-skins.com/cdn-cgi/image/f=auto,fit=scale-down/https://assets.lis-skins.com/market_images/12702_b.png" alt="AWP | Скоростной зверь" class="prize-image" loading="lazy" onerror="this.src='https://cdn6.gamecontent.io/images/skin/1307/middle-5c793d24e8b5e.png'">
+                <div class="prize-rarity">★ Легендарный скин ★</div>
+                <div style="margin-top: 10px; font-size: 0.8rem; color: #444; letter-spacing: 1px;">⚡ Только победителю</div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- СТРАНИЦА 2: ГОЛОСОВАНИЕ -->
+    <!-- ============================================ -->
+    <div id="page-vote" class="page">
+        <div class="vote-header">
+            <div class="vote-title">🗳️ Голосование</div>
+            <div class="vote-subtitle">Выберите карту для Shusha Game's</div>
+        </div>
+
+        <div class="vote-stats" id="voteStats">
+            <div class="vote-stat-item">🏜️ Dust 2: <strong class="dust2-color" id="dust2Count">0</strong> голосов (<span id="dust2Percent">0</span>%)</div>
+            <div class="vote-stat-item">🌅 Mirage: <strong class="mirage-color" id="mirageCount">0</strong> голосов (<span id="miragePercent">0</span>%)</div>
+            <div class="vote-stat-item">👥 Всего: <strong id="totalVotes">0</strong></div>
+        </div>
+
+        <div class="vote-bars">
+            <div class="vote-bar-dust2" id="barDust2"></div>
+            <div class="vote-bar-mirage" id="barMirage"></div>
+        </div>
+
+        <div class="vote-grid">
+            <div class="vote-card" data-map="dust2">
+                <img src="https://static.wikia.nocookie.net/counterstrike/images/b/bf/Cs2dust2.jpg/revision/latest/scale-to-width-down/1200?cb=20230323193331&path-prefix=ru" alt="Dust 2" class="vote-card-image" loading="lazy" onerror="this.src='https://cdn.akamai.steamstatic.com/apps/csgo/images/maps/de_dust2.jpg'">
+                <div class="vote-card-name">Dust 2</div>
+                <div class="vote-card-map-info">🏜️ Классическая карта</div>
+            </div>
+            <div class="vote-card" data-map="mirage">
+                <img src="https://images.steamusercontent.com/ugc/2383035539727634815/E4760E0852CF618E337241A8A74CA4898FA001B0/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true" alt="Mirage" class="vote-card-image" loading="lazy" onerror="this.src='https://cdn.akamai.steamstatic.com/apps/csgo/images/maps/de_mirage.jpg'">
+                <div class="vote-card-name">Mirage</div>
+                <div class="vote-card-map-info">🌅 Песчаная арена</div>
+            </div>
+        </div>
+
+        <div class="vote-action">
+            <button class="vote-btn" id="voteSubmitBtn" disabled>Проголосовать</button>
+            <div class="vote-result" id="voteResult">Выберите карту</div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- СТРАНИЦА 3: УЧАСТНИКИ -->
+    <!-- ============================================ -->
+    <div id="page-participants" class="page">
+        <div class="participants-header">
+            <div class="participants-title">👥 Участники</div>
+            <div class="participants-subtitle">Игроки Shusha Game's</div>
+        </div>
+
+        <div id="participantsContainer">
+            <div class="loading-spinner">Загрузка участников</div>
+        </div>
+    </div>
+
+    <div class="footer-text">SHUSHA GAME'S • CS2 COMMUNITY</div>
+</div>
+
+<script>
+    // ==========================================
+    // 1. ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ
+    // ==========================================
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const pages = {
+        main: document.getElementById('page-main'),
+        vote: document.getElementById('page-vote'),
+        participants: document.getElementById('page-participants')
+    };
+
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            navBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            Object.values(pages).forEach(p => p.classList.remove('active'));
+            const pageId = btn.dataset.page;
+            if (pageId === 'page-main') pages.main.classList.add('active');
+            if (pageId === 'page-vote') { pages.vote.classList.add('active'); updateStats(); }
+            if (pageId === 'page-participants') { pages.participants.classList.add('active'); loadParticipants(); }
+        });
+    });
+
+    // ==========================================
+    // 2. СИСТЕМА ГОЛОСОВАНИЯ
+    // ==========================================
+
+    function getVotes() {
+        const data = localStorage.getItem('shusha_votes');
+        if (data) { try { return JSON.parse(data); } catch(e) {} }
+        return { dust2: 0, mirage: 0 };
+    }
+
+    function saveVotes(votes) { localStorage.setItem('shusha_votes', JSON.stringify(votes)); }
+    function hasVoted() { return localStorage.getItem('shusha_has_voted') === 'true'; }
+    function setVoted() { localStorage.setItem('shusha_has_voted', 'true'); }
+
+    function updateStats() {
+        const votes = getVotes();
+        const total = votes.dust2 + votes.mirage;
+        document.getElementById('dust2Count').textContent = votes.dust2;
+        document.getElementById('mirageCount').textContent = votes.mirage;
+        document.getElementById('totalVotes').textContent = total;
+        const dust2Pct = total === 0 ? 0 : Math.round((votes.dust2 / total) * 100);
+        const miragePct = total === 0 ? 0 : Math.round((votes.mirage / total) * 100);
+        document.getElementById('dust2Percent').textContent = dust2Pct;
+        document.getElementById('miragePercent').textContent = miragePct;
+        document.getElementById('barDust2').style.width = dust2Pct + '%';
+        document.getElementById('barMirage').style.width = miragePct + '%';
+
+        const btn = document.getElementById('voteSubmitBtn');
+        const resultDiv = document.getElementById('voteResult');
+        if (hasVoted()) {
+            btn.disabled = true;
+            btn.classList.add('voted');
+            btn.textContent = '✅ Голос учтён';
+            resultDiv.innerHTML = '🙏 Вы уже проголосовали! Спасибо!';
+            resultDiv.style.color = '#00ff88';
+            document.querySelectorAll('.vote-card').forEach(c => {
+                c.style.cursor = 'default';
+                c.style.opacity = '0.6';
+                c.style.pointerEvents = 'none';
+            });
+        } else {
+            btn.disabled = true;
+            btn.classList.remove('voted');
+            btn.textContent = 'Проголосовать';
+            resultDiv.innerHTML = 'Выберите карту';
+            resultDiv.style.color = '#888';
+            document.querySelectorAll('.vote-card').forEach(c => {
+                c.style.cursor = 'pointer';
+                c.style.opacity = '1';
+                c.style.pointerEvents = 'auto';
+            });
+        }
+    }
+
+    const cards = document.querySelectorAll('.vote-card');
+    const submitBtn = document.getElementById('voteSubmitBtn');
+    const resultDiv = document.getElementById('voteResult');
+    let selectedMap = null;
+
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            if (hasVoted()) return;
+            cards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedMap = card.dataset.map;
+            submitBtn.disabled = false;
+            resultDiv.innerHTML = `Выбрана карта: <strong>${selectedMap === 'dust2' ? 'Dust 2' : 'Mirage'}</strong>`;
+            resultDiv.style.color = '#00f0ff';
+        });
+    });
+
+    submitBtn.addEventListener('click', () => {
+        if (!selectedMap || hasVoted()) return;
+        const votes = getVotes();
+        if (selectedMap === 'dust2') votes.dust2++;
+        else votes.mirage++;
+        saveVotes(votes);
+        setVoted();
+        const mapName = selectedMap === 'dust2' ? 'Dust 2' : 'Mirage';
+        resultDiv.innerHTML = `✅ Голос принят! Играем на <strong>${mapName}</strong> 🎯`;
+        resultDiv.style.color = '#00ff88';
+        submitBtn.disabled = true;
+        submitBtn.classList.add('voted');
+        submitBtn.textContent = '✅ Голос учтён';
+        cards.forEach(c => { c.style.cursor = 'default'; c.style.opacity = '0.6'; c.style.pointerEvents = 'none'; });
+        updateStats();
+    });
+
+    // ==========================================
+    // 3. УЧАСТНИКИ (Steam API)
+    // ==========================================
+
+    // 🔥 СЮДА ВСТАВЬ СВОЙ STEAM API KEY
+    const STEAM_API_KEY = 'AA49E17C2B1448A76C0CC2C4EB2772EF';
+
+    const participantsData = [
+        { steamId: '76561199524972597', name: 'roltox' },
+        { steamId: '76561198730568620', name: 'den' },
+        { steamId: '76561198789186689', name: 'chmya' },
+        { steamId: '76561199877089813', name: 'oZEMpick' },
+        { steamId: null, name: 'Игрок 4', unknown: true }
+    ];
+
+    async function loadParticipants() {
+        const container = document.getElementById('participantsContainer');
+
+        // Фильтруем известные ID
+        const knownIds = participantsData.filter(p => p.steamId !== null).map(p => p.steamId);
+        if (knownIds.length === 0) {
+            renderParticipants(participantsData, {});
+            return;
+        }
+
+        try {
+            const url = `https://corsproxy.io/?url=https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${STEAM_API_KEY}&steamids=${knownIds.join(',')}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const players = data.response?.players || [];
+            const playerMap = {};
+            players.forEach(p => {
+                playerMap[p.steamid] = {
+                    avatar: p.avatarmedium || p.avatar || '',
+                    personaname: p.personaname || p.steamid,
+                    profileurl: p.profileurl || `https://steamcommunity.com/profiles/${p.steamid}/`,
+                    personastate: p.personastate || 0
+                };
+            });
+
+            renderParticipants(participantsData, playerMap);
+        } catch (error) {
+            console.error('Ошибка загрузки Steam API:', error);
+            container.innerHTML = `
+                <div style="text-align:center;padding:40px;color:#666;">
+                    ⚠️ Не удалось загрузить данные из Steam<br>
+                    <span style="font-size:0.8rem;color:#444;">Проверь API Key и интернет-соединение</span>
+                    <br><br>
+                    <button onclick="loadParticipants()" style="padding:10px 30px;border-radius:30px;border:1px solid #444;background:transparent;color:#888;cursor:pointer;">🔄 Повторить</button>
+                </div>
+            `;
+        }
+    }
+
+    function renderParticipants(data, playerMap) {
+        const container = document.getElementById('participantsContainer');
+        let html = '<div class="participants-grid">';
+
+        data.forEach(p => {
+            const isUnknown = p.unknown || false;
+            const steamId = p.steamId;
+            const player = steamId ? playerMap[steamId] : null;
+
+            let avatar = '';
+            let name = p.name;
+            let profileUrl = '#';
+            let statusText = 'Ожидание';
+            let statusClass = 'offline';
+
+            if (isUnknown) {
+                avatar = '❓';
+                name = '❓ ' + p.name;
+                profileUrl = '#';
+                statusText = 'Скоро появится';
+                statusClass = 'offline';
+            } else if (player) {
+                avatar = player.avatar || '';
+                name = player.personaname || p.name;
+                profileUrl = player.profileurl || `https://steamcommunity.com/profiles/${steamId}/`;
+                const state = player.personastate || 0;
+                statusText = state > 0 ? '🟢 В сети' : '⚫ Не в сети';
+                statusClass = state > 0 ? 'online' : 'offline';
+            } else {
+                avatar = '🔄';
+                name = p.name;
+                profileUrl = `https://steamcommunity.com/profiles/${steamId}/`;
+                statusText = 'Загрузка...';
+                statusClass = 'offline';
+            }
+
+            const isClickable = !isUnknown && profileUrl !== '#';
+
+            html += `
+                <a href="${profileUrl}" target="_blank" class="participant-card ${isUnknown ? 'participant-unknown' : ''}" style="${!isClickable ? 'cursor:default;' : ''}">
+                    <div class="participant-avatar" style="${typeof avatar === 'string' && avatar.startsWith('http') ? `background-image:url(${avatar});background-size:cover;background-position:center;` : ''} ${typeof avatar === 'string' && !avatar.startsWith('http') ? 'display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#444;' : ''}">
+                        ${typeof avatar === 'string' && !avatar.startsWith('http') ? avatar : ''}
+                    </div>
+                    <div class="participant-name">${name}</div>
+                    <div class="participant-status ${statusClass}">${statusText}</div>
+                </a>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // ==========================================
+    // 4. ИНИЦИАЛИЗАЦИЯ
+    // ==========================================
+
+    updateStats();
+
+    // Если на странице участников сразу — загружаем
+    if (document.getElementById('page-participants').classList.contains('active')) {
+        loadParticipants();
+    }
+
+    window.addEventListener('load', updateStats);
+</script>
+
+</body>
+</html>
